@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter } from '@dnd-kit/core';
-import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, arrayMove, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Plus } from 'lucide-react';
 
-interface PriceItem {
+interface ProductItem {
   id: string;
-  price: string;
   brand: string;
   description: string;
   color: string;
@@ -17,92 +16,153 @@ interface PriceItem {
   category: string;
 }
 
-interface SOMData {
-  left: string;
-  right: string;
+interface PriceTier {
+  price: string;
+  somLeft: string;
+  somRight: string;
+  products: ProductItem[];
 }
 
 const PricePointAnalysis = () => {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [items, setItems] = useState<PriceItem[]>([
-    { 
-      id: '1', 
-      price: '$70', 
-      brand: 'Takis', 
-      description: '12X-FAMILIAR', 
-      color: '#f59e0b', 
-      size: '284.36 GR',
-      grWeight: '$246',
-      pricePerGr: '0.00pp',
-      category: 'FAMILIAR'
+  const [activeTierId, setActiveTierId] = useState<string | null>(null);
+  
+  const [priceTiers, setPriceTiers] = useState<PriceTier[]>([
+    {
+      price: '$70',
+      somLeft: '0',
+      somRight: '0',
+      products: [
+        { 
+          id: 'takis-1', 
+          brand: 'Takis', 
+          description: '12X-FAMILIAR', 
+          color: '#f59e0b', 
+          size: '284.36 GR',
+          grWeight: '$246',
+          pricePerGr: '0.00pp',
+          category: 'FAMILIAR'
+        }
+      ]
     },
-    { 
-      id: '2', 
-      price: '$51', 
-      brand: 'Sabritas', 
-      description: '12X-FAMILIAR', 
-      color: '#ef4444', 
-      size: '161.38 GR',
-      grWeight: '$318.22',
-      pricePerGr: '0.00pp',
-      category: 'FAMILIAR'
+    {
+      price: '$51',
+      somLeft: '0.1',
+      somRight: '0',
+      products: [
+        { 
+          id: 'sabritas-1', 
+          brand: 'Sabritas', 
+          description: '12X-FAMILIAR', 
+          color: '#ef4444', 
+          size: '161.38 GR',
+          grWeight: '$318.22',
+          pricePerGr: '0.00pp',
+          category: 'FAMILIAR'
+        },
+        { 
+          id: 'doritos-1', 
+          brand: 'Doritos', 
+          description: '12X-FAMILIAR', 
+          color: '#f97316', 
+          size: '222.36 GR',
+          grWeight: '$228.73',
+          pricePerGr: '0.00pp',
+          category: 'FAMILIAR'
+        }
+      ]
     },
-    { 
-      id: '3', 
-      price: '$48', 
-      brand: 'Chips', 
-      description: '12X-FAMILIAR', 
-      color: '#06b6d4', 
-      size: '169.79 GR',
-      grWeight: '$286',
-      pricePerGr: '0.00pp',
-      category: 'FAMILIAR'
+    {
+      price: '$48',
+      somLeft: '0',
+      somRight: '1.37',
+      products: [
+        { 
+          id: 'chips-1', 
+          brand: 'Chips', 
+          description: '12X-FAMILIAR', 
+          color: '#06b6d4', 
+          size: '169.79 GR',
+          grWeight: '$286',
+          pricePerGr: '0.00pp',
+          category: 'FAMILIAR'
+        }
+      ]
     },
-    { 
-      id: '4', 
-      price: '$33', 
-      brand: 'Sabritas', 
-      description: '11X-COMPARTE', 
-      color: '#ef4444', 
-      size: '105.58 GR',
-      grWeight: '$314',
-      pricePerGr: '0.00pp',
-      category: 'COMPARTE'
+    {
+      price: '$33',
+      somLeft: '0.26',
+      somRight: '0',
+      products: [
+        { 
+          id: 'sabritas-2', 
+          brand: 'Sabritas', 
+          description: '11X-COMPARTE', 
+          color: '#ef4444', 
+          size: '105.58 GR',
+          grWeight: '$314',
+          pricePerGr: '0.00pp',
+          category: 'COMPARTE'
+        },
+        { 
+          id: 'doritos-2', 
+          brand: 'Doritos', 
+          description: '11X-COMPARTE', 
+          color: '#f97316', 
+          size: '145.36 GR',
+          grWeight: '$226',
+          pricePerGr: '0.00pp',
+          category: 'COMPARTE'
+        }
+      ]
     },
-    { 
-      id: '5', 
-      price: '$22', 
-      brand: 'Doritos', 
-      description: '09X-JUMBO', 
-      color: '#f97316', 
-      size: '104.92 GR',
-      grWeight: '$207',
-      pricePerGr: '0.00pp',
-      category: 'JUMBO'
+    {
+      price: '$22',
+      somLeft: '1.96',
+      somRight: '0',
+      products: [
+        { 
+          id: 'doritos-3', 
+          brand: 'Doritos', 
+          description: '09X-JUMBO', 
+          color: '#f97316', 
+          size: '104.92 GR',
+          grWeight: '$207',
+          pricePerGr: '0.00pp',
+          category: 'JUMBO'
+        },
+        { 
+          id: 'sabritas-3', 
+          brand: 'Sabritas', 
+          description: '09X-JUMBO', 
+          color: '#ef4444', 
+          size: '145.74 GR',
+          grWeight: '$226',
+          pricePerGr: '0.00pp',
+          category: 'JUMBO'
+        }
+      ]
     },
-    { 
-      id: '6', 
-      price: '$17', 
-      brand: 'Chips', 
-      description: '12X-FAMILIAR', 
-      color: '#06b6d4', 
-      size: '284.36 GR',
-      grWeight: '$59',
-      pricePerGr: '0.00pp',
-      category: 'FAMILIAR'
+    {
+      price: '$17',
+      somLeft: '11.05',
+      somRight: '5.18',
+      products: [
+        { 
+          id: 'chips-2', 
+          brand: 'Chips', 
+          description: '12X-FAMILIAR', 
+          color: '#06b6d4', 
+          size: '284.36 GR',
+          grWeight: '$59',
+          pricePerGr: '0.00pp',
+          category: 'FAMILIAR'
+        }
+      ]
     }
   ]);
 
-  const [somData] = useState<SOMData[]>([
-    { left: '0.00pp', right: '0.00pp' },
-    { left: '0.00pp', right: '0.00pp' },
-    { left: '0.00pp', right: '1.37' },
-    { left: '0.00pp', right: '0.00pp' },
-    { left: '0.00pp', right: '0.00pp' },
-    { left: '0.00pp', right: '5.18' }
-  ]);
-
-  const SortableItem = ({ item, index }: { item: PriceItem; index: number }) => {
+  const SortableProduct = ({ product, tierId }: { product: ProductItem; tierId: string }) => {
     const {
       attributes,
       listeners,
@@ -110,7 +170,7 @@ const PricePointAnalysis = () => {
       transform,
       transition,
       isDragging,
-    } = useSortable({ id: item.id });
+    } = useSortable({ id: `${tierId}-${product.id}` });
 
     const style = {
       transform: CSS.Transform.toString(transform),
@@ -118,58 +178,64 @@ const PricePointAnalysis = () => {
       opacity: isDragging ? 0.5 : 1,
     };
 
+    const getBrandColor = (brand: string) => {
+      switch (brand) {
+        case 'Sabritas': return '#ef4444';
+        case 'Doritos': return '#f97316';
+        case 'Chips': return '#06b6d4';
+        case 'Takis': return '#f59e0b';
+        default: return '#6b7280';
+      }
+    };
+
     return (
-      <div className="flex items-center w-full mb-2">
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="flex items-center space-x-2 bg-white rounded-lg p-2 shadow-sm border cursor-move hover:shadow-md transition-all duration-200"
+        {...attributes}
+        {...listeners}
+      >
+        <div 
+          className="px-3 py-2 rounded text-xs font-medium text-white min-w-[80px] text-center"
+          style={{ backgroundColor: getBrandColor(product.brand) }}
+        >
+          <div className="font-bold">{product.size}</div>
+          <div>{product.grWeight}</div>
+          <div>{product.pricePerGr}</div>
+          <div>{product.description}</div>
+        </div>
+        <div className="text-gray-400 hover:text-gray-600">
+          <GripVertical size={16} />
+        </div>
+      </div>
+    );
+  };
+
+  const DroppableRow = ({ tier, index }: { tier: PriceTier; index: number }) => {
+    const tierId = `tier-${index}`;
+    
+    return (
+      <div className="flex items-center w-full mb-3 min-h-[80px]">
         {/* Left SOM */}
         <div className="w-20 text-center">
-          <div className="text-sm font-medium text-gray-900">{somData[index]?.left || '0'}</div>
+          <div className="text-sm font-medium text-gray-900">{tier.somLeft}</div>
           <div className="text-xs text-gray-500">0.00pp</div>
         </div>
 
-        {/* Main draggable content */}
+        {/* Main content area */}
         <div className="flex-1 mx-4">
-          <div
-            ref={setNodeRef}
-            style={style}
-            className="bg-blue-50 rounded-lg p-3 cursor-move hover:shadow-md transition-all duration-200 border-2 border-dashed border-blue-200"
-            {...attributes}
-            {...listeners}
-          >
+          <div className="bg-blue-50 rounded-lg p-4 border-2 border-dashed border-blue-200 min-h-[72px]">
             <div className="flex items-center justify-between">
-              {/* Left side - Brand cards */}
-              <div className="flex items-center space-x-2">
-                {item.brand === 'Sabritas' && (
-                  <div className="bg-red-500 text-white px-3 py-1 rounded text-xs font-medium">
-                    {item.size}<br/>
-                    {item.grWeight}<br/>
-                    {item.pricePerGr}<br/>
-                    {item.description}
+              {/* Left side - Products */}
+              <div className="flex-1">
+                <SortableContext items={tier.products.map(p => `${tierId}-${p.id}`)} strategy={horizontalListSortingStrategy}>
+                  <div className="flex items-center space-x-3 flex-wrap gap-2">
+                    {tier.products.map((product) => (
+                      <SortableProduct key={product.id} product={product} tierId={tierId} />
+                    ))}
                   </div>
-                )}
-                {item.brand === 'Doritos' && (
-                  <div className="bg-orange-500 text-white px-3 py-1 rounded text-xs font-medium">
-                    {item.size}<br/>
-                    {item.grWeight}<br/>
-                    {item.pricePerGr}<br/>
-                    {item.description}
-                  </div>
-                )}
-                {item.brand === 'Chips' && (
-                  <div className="bg-cyan-500 text-white px-3 py-1 rounded text-xs font-medium">
-                    {item.size}<br/>
-                    {item.grWeight}<br/>
-                    {item.pricePerGr}<br/>
-                    {item.description}
-                  </div>
-                )}
-                {item.brand === 'Takis' && (
-                  <div className="bg-yellow-500 text-white px-3 py-1 rounded text-xs font-medium">
-                    {item.size}<br/>
-                    {item.grWeight}<br/>
-                    {item.pricePerGr}<br/>
-                    {item.description}
-                  </div>
-                )}
+                </SortableContext>
               </div>
 
               {/* Center - Price */}
@@ -178,13 +244,8 @@ const PricePointAnalysis = () => {
                   className="w-16 h-16 rounded-lg flex items-center justify-center text-white text-lg font-bold"
                   style={{ backgroundColor: '#1e88e5' }}
                 >
-                  {item.price}
+                  {tier.price}
                 </div>
-              </div>
-
-              {/* Drag handle */}
-              <div className="text-gray-400 hover:text-gray-600">
-                <GripVertical size={20} />
               </div>
             </div>
           </div>
@@ -192,7 +253,7 @@ const PricePointAnalysis = () => {
 
         {/* Right SOM */}
         <div className="w-20 text-center">
-          <div className="text-sm font-medium text-gray-900">{somData[index]?.right || '0'}</div>
+          <div className="text-sm font-medium text-gray-900">{tier.somRight}</div>
           <div className="text-xs text-gray-500">0.00pp</div>
         </div>
       </div>
@@ -200,25 +261,88 @@ const PricePointAnalysis = () => {
   };
 
   const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
+    const activeIdStr = event.active.id as string;
+    setActiveId(activeIdStr);
+    
+    // Extract tier ID from the active ID
+    const tierMatch = activeIdStr.match(/^tier-(\d+)-/);
+    if (tierMatch) {
+      setActiveTierId(`tier-${tierMatch[1]}`);
+    }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
-    if (over && active.id !== over.id) {
-      setItems((items) => {
-        const oldIndex = items.findIndex(item => item.id === active.id);
-        const newIndex = items.findIndex(item => item.id === over.id);
+    if (!over) {
+      setActiveId(null);
+      setActiveTierId(null);
+      return;
+    }
+
+    const activeIdStr = active.id as string;
+    const overIdStr = over.id as string;
+
+    // Extract tier and product IDs
+    const activeMatch = activeIdStr.match(/^tier-(\d+)-(.+)$/);
+    const overMatch = overIdStr.match(/^tier-(\d+)-(.+)$/);
+
+    if (!activeMatch || !overMatch) {
+      setActiveId(null);
+      setActiveTierId(null);
+      return;
+    }
+
+    const activeTierIndex = parseInt(activeMatch[1]);
+    const activeProductId = activeMatch[2];
+    const overTierIndex = parseInt(overMatch[1]);
+    const overProductId = overMatch[2];
+
+    if (activeTierIndex === overTierIndex && activeProductId !== overProductId) {
+      // Reordering within the same tier
+      setPriceTiers(prevTiers => {
+        const newTiers = [...prevTiers];
+        const tier = newTiers[activeTierIndex];
+        const oldIndex = tier.products.findIndex(p => p.id === activeProductId);
+        const newIndex = tier.products.findIndex(p => p.id === overProductId);
         
-        return arrayMove(items, oldIndex, newIndex);
+        if (oldIndex !== -1 && newIndex !== -1) {
+          tier.products = arrayMove(tier.products, oldIndex, newIndex);
+        }
+        
+        return newTiers;
+      });
+    } else if (activeTierIndex !== overTierIndex) {
+      // Moving between different tiers
+      setPriceTiers(prevTiers => {
+        const newTiers = [...prevTiers];
+        const sourceTier = newTiers[activeTierIndex];
+        const targetTier = newTiers[overTierIndex];
+        
+        const productIndex = sourceTier.products.findIndex(p => p.id === activeProductId);
+        if (productIndex !== -1) {
+          const [product] = sourceTier.products.splice(productIndex, 1);
+          const targetIndex = targetTier.products.findIndex(p => p.id === overProductId);
+          
+          if (targetIndex !== -1) {
+            targetTier.products.splice(targetIndex, 0, product);
+          } else {
+            targetTier.products.push(product);
+          }
+        }
+        
+        return newTiers;
       });
     }
     
     setActiveId(null);
+    setActiveTierId(null);
   };
 
-  const activeItem = items.find(item => item.id === activeId);
+  const activeProduct = activeId && activeTierId ? 
+    priceTiers.find((_, index) => `tier-${index}` === activeTierId)?.products.find(p => 
+      activeId === `${activeTierId}-${p.id}`
+    ) : null;
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -277,46 +401,32 @@ const PricePointAnalysis = () => {
         </div>
       </div>
 
-      {/* Draggable Items */}
+      {/* Price Tiers with Drag and Drop */}
       <DndContext 
         onDragStart={handleDragStart} 
         onDragEnd={handleDragEnd}
         collisionDetection={closestCenter}
       >
-        <SortableContext items={items.map(item => item.id)} strategy={verticalListSortingStrategy}>
-          <div className="space-y-2">
-            {items.map((item, index) => (
-              <SortableItem key={item.id} item={item} index={index} />
-            ))}
-          </div>
-        </SortableContext>
+        <div className="space-y-2">
+          {priceTiers.map((tier, index) => (
+            <DroppableRow key={`tier-${index}`} tier={tier} index={index} />
+          ))}
+        </div>
         
         <DragOverlay>
-          {activeItem ? (
-            <div className="bg-blue-50 rounded-lg p-3 shadow-lg border-2 border-blue-300">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div 
-                    className="px-3 py-1 rounded text-xs font-medium text-white"
-                    style={{ backgroundColor: activeItem.color }}
-                  >
-                    {activeItem.size}<br/>
-                    {activeItem.grWeight}<br/>
-                    {activeItem.pricePerGr}<br/>
-                    {activeItem.description}
-                  </div>
-                </div>
-                <div className="mx-4">
-                  <div 
-                    className="w-16 h-16 rounded-lg flex items-center justify-center text-white text-lg font-bold"
-                    style={{ backgroundColor: '#1e88e5' }}
-                  >
-                    {activeItem.price}
-                  </div>
-                </div>
-                <div className="text-gray-400">
-                  <GripVertical size={20} />
-                </div>
+          {activeProduct ? (
+            <div className="flex items-center space-x-2 bg-white rounded-lg p-2 shadow-lg border-2 border-blue-300">
+              <div 
+                className="px-3 py-2 rounded text-xs font-medium text-white min-w-[80px] text-center"
+                style={{ backgroundColor: activeProduct.color }}
+              >
+                <div className="font-bold">{activeProduct.size}</div>
+                <div>{activeProduct.grWeight}</div>
+                <div>{activeProduct.pricePerGr}</div>
+                <div>{activeProduct.description}</div>
+              </div>
+              <div className="text-gray-400">
+                <GripVertical size={16} />
               </div>
             </div>
           ) : null}
