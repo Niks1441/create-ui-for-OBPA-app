@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter } from '@dnd-kit/core';
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { GripVertical, Plus } from 'lucide-react';
 
 interface PriceItem {
   id: string;
@@ -10,22 +11,98 @@ interface PriceItem {
   brand: string;
   description: string;
   color: string;
-  category: 'COOKIES' | 'CRACKERS';
+  size: string;
+  grWeight: string;
+  pricePerGr: string;
+  category: string;
+}
+
+interface SOMData {
+  left: string;
+  right: string;
 }
 
 const PricePointAnalysis = () => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [items, setItems] = useState<PriceItem[]>([
-    { id: '1', price: '2.76', brand: 'Oreo', description: 'Original Sandwich Cookies', color: '#3b82f6', category: 'COOKIES' },
-    { id: '2', price: '3.12', brand: 'Chips Ahoy', description: 'Chewy Chocolate Chip', color: '#ef4444', category: 'COOKIES' },
-    { id: '3', price: '2.89', brand: 'Ritz', description: 'Original Crackers', color: '#f59e0b', category: 'CRACKERS' },
-    { id: '4', price: '3.45', brand: 'Trident', description: 'Sugar Free Gum', color: '#10b981', category: 'COOKIES' },
-    { id: '5', price: '2.67', brand: 'Sour Patch', description: 'Kids Candy', color: '#8b5cf6', category: 'COOKIES' },
-    { id: '6', price: '4.17', brand: 'Oreo', description: 'Double Stuf Cookies', color: '#3b82f6', category: 'COOKIES' },
-    { id: '7', price: '5.19', brand: 'Chips Ahoy', description: 'Chunky Cookies', color: '#ef4444', category: 'COOKIES' }
+    { 
+      id: '1', 
+      price: '$70', 
+      brand: 'Takis', 
+      description: '12X-FAMILIAR', 
+      color: '#f59e0b', 
+      size: '284.36 GR',
+      grWeight: '$246',
+      pricePerGr: '0.00pp',
+      category: 'FAMILIAR'
+    },
+    { 
+      id: '2', 
+      price: '$51', 
+      brand: 'Sabritas', 
+      description: '12X-FAMILIAR', 
+      color: '#ef4444', 
+      size: '161.38 GR',
+      grWeight: '$318.22',
+      pricePerGr: '0.00pp',
+      category: 'FAMILIAR'
+    },
+    { 
+      id: '3', 
+      price: '$48', 
+      brand: 'Chips', 
+      description: '12X-FAMILIAR', 
+      color: '#06b6d4', 
+      size: '169.79 GR',
+      grWeight: '$286',
+      pricePerGr: '0.00pp',
+      category: 'FAMILIAR'
+    },
+    { 
+      id: '4', 
+      price: '$33', 
+      brand: 'Sabritas', 
+      description: '11X-COMPARTE', 
+      color: '#ef4444', 
+      size: '105.58 GR',
+      grWeight: '$314',
+      pricePerGr: '0.00pp',
+      category: 'COMPARTE'
+    },
+    { 
+      id: '5', 
+      price: '$22', 
+      brand: 'Doritos', 
+      description: '09X-JUMBO', 
+      color: '#f97316', 
+      size: '104.92 GR',
+      grWeight: '$207',
+      pricePerGr: '0.00pp',
+      category: 'JUMBO'
+    },
+    { 
+      id: '6', 
+      price: '$17', 
+      brand: 'Chips', 
+      description: '12X-FAMILIAR', 
+      color: '#06b6d4', 
+      size: '284.36 GR',
+      grWeight: '$59',
+      pricePerGr: '0.00pp',
+      category: 'FAMILIAR'
+    }
   ]);
 
-  const SortableItem = ({ item }: { item: PriceItem }) => {
+  const [somData] = useState<SOMData[]>([
+    { left: '0.00pp', right: '0.00pp' },
+    { left: '0.00pp', right: '0.00pp' },
+    { left: '0.00pp', right: '1.37' },
+    { left: '0.00pp', right: '0.00pp' },
+    { left: '0.00pp', right: '0.00pp' },
+    { left: '0.00pp', right: '5.18' }
+  ]);
+
+  const SortableItem = ({ item, index }: { item: PriceItem; index: number }) => {
     const {
       attributes,
       listeners,
@@ -42,30 +119,81 @@ const PricePointAnalysis = () => {
     };
 
     return (
-      <div
-        ref={setNodeRef}
-        style={style}
-        {...attributes}
-        {...listeners}
-        className="bg-white rounded-lg border p-4 cursor-move hover:shadow-md transition-shadow"
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div 
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-medium"
-              style={{ backgroundColor: item.color }}
-            >
-              {item.brand.substring(0, 2)}
-            </div>
-            <div>
-              <div className="font-medium text-gray-900">{item.brand}</div>
-              <div className="text-sm text-gray-500">{item.description}</div>
+      <div className="flex items-center w-full mb-2">
+        {/* Left SOM */}
+        <div className="w-20 text-center">
+          <div className="text-sm font-medium text-gray-900">{somData[index]?.left || '0'}</div>
+          <div className="text-xs text-gray-500">0.00pp</div>
+        </div>
+
+        {/* Main draggable content */}
+        <div className="flex-1 mx-4">
+          <div
+            ref={setNodeRef}
+            style={style}
+            className="bg-blue-50 rounded-lg p-3 cursor-move hover:shadow-md transition-all duration-200 border-2 border-dashed border-blue-200"
+            {...attributes}
+            {...listeners}
+          >
+            <div className="flex items-center justify-between">
+              {/* Left side - Brand cards */}
+              <div className="flex items-center space-x-2">
+                {item.brand === 'Sabritas' && (
+                  <div className="bg-red-500 text-white px-3 py-1 rounded text-xs font-medium">
+                    {item.size}<br/>
+                    {item.grWeight}<br/>
+                    {item.pricePerGr}<br/>
+                    {item.description}
+                  </div>
+                )}
+                {item.brand === 'Doritos' && (
+                  <div className="bg-orange-500 text-white px-3 py-1 rounded text-xs font-medium">
+                    {item.size}<br/>
+                    {item.grWeight}<br/>
+                    {item.pricePerGr}<br/>
+                    {item.description}
+                  </div>
+                )}
+                {item.brand === 'Chips' && (
+                  <div className="bg-cyan-500 text-white px-3 py-1 rounded text-xs font-medium">
+                    {item.size}<br/>
+                    {item.grWeight}<br/>
+                    {item.pricePerGr}<br/>
+                    {item.description}
+                  </div>
+                )}
+                {item.brand === 'Takis' && (
+                  <div className="bg-yellow-500 text-white px-3 py-1 rounded text-xs font-medium">
+                    {item.size}<br/>
+                    {item.grWeight}<br/>
+                    {item.pricePerGr}<br/>
+                    {item.description}
+                  </div>
+                )}
+              </div>
+
+              {/* Center - Price */}
+              <div className="mx-4">
+                <div 
+                  className="w-16 h-16 rounded-lg flex items-center justify-center text-white text-lg font-bold"
+                  style={{ backgroundColor: '#1e88e5' }}
+                >
+                  {item.price}
+                </div>
+              </div>
+
+              {/* Drag handle */}
+              <div className="text-gray-400 hover:text-gray-600">
+                <GripVertical size={20} />
+              </div>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-gray-900">${item.price}</div>
-            <div className="text-sm text-gray-500">{item.category}</div>
-          </div>
+        </div>
+
+        {/* Right SOM */}
+        <div className="w-20 text-center">
+          <div className="text-sm font-medium text-gray-900">{somData[index]?.right || '0'}</div>
+          <div className="text-xs text-gray-500">0.00pp</div>
         </div>
       </div>
     );
@@ -94,77 +222,132 @@ const PricePointAnalysis = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Price Point Analysis</h2>
+        <div className="flex items-center space-x-2">
+          <h2 className="text-xl font-semibold text-gray-900">Price Point Analysis</h2>
+          <div className="w-4 h-4 bg-gray-300 rounded-full flex items-center justify-center">
+            <span className="text-xs text-white">?</span>
+          </div>
+        </div>
         <div className="flex items-center space-x-4">
           <div className="text-sm text-gray-600">
-            Drag items to reorder
+            Manufacturer(Competitor): <span className="font-medium">BIMBO</span>
           </div>
-          <select className="px-3 py-1 border border-gray-300 rounded-md text-sm">
-            <option>Price Low to High</option>
-            <option>Price High to Low</option>
-            <option>Brand A-Z</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-6">
-        {/* Left Side - COOKIES */}
-        <div>
-          <div className="text-center mb-4">
-            <div className="text-lg font-semibold text-gray-900">COOKIES</div>
-            <div className="text-sm text-gray-500">Drag items vertically</div>
-          </div>
-          <div className="space-y-1">
-            {[0, 1, 2, 3, 4, 5, 6].map((index) => (
-              <div key={index} className="h-12 bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-sm">
-                {index + 1}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Middle - Draggable Items */}
-        <div>
-          <div className="text-center mb-4">
-            <div className="text-lg font-semibold text-gray-900">Products</div>
-            <div className="text-sm text-gray-500">Drag to reorder</div>
-          </div>
-          
-          <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-            <SortableContext items={items.map(item => item.id)} strategy={verticalListSortingStrategy}>
-              <div className="space-y-3">
-                {items.map((item) => (
-                  <SortableItem key={item.id} item={item} />
-                ))}
-              </div>
-            </SortableContext>
-            
-            <DragOverlay>
-              {activeItem ? <SortableItem item={activeItem} /> : null}
-            </DragOverlay>
-          </DndContext>
-        </div>
-
-        {/* Right Side - CRACKERS */}
-        <div>
-          <div className="text-center mb-4">
-            <div className="text-lg font-semibold text-gray-900">CRACKERS</div>
-            <div className="text-sm text-gray-500">Drop zone</div>
-          </div>
-          <div className="space-y-1">
-            {[0, 1, 2, 3, 4, 5, 6].map((index) => (
-              <div key={index} className="h-12 bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-sm">
-                {index + 1}
-              </div>
-            ))}
+          <div className="text-sm text-gray-600">
+            Price Ladder <span className="inline-block w-3 h-3 bg-blue-600 rounded-full ml-1"></span> Price Buckets
           </div>
         </div>
       </div>
 
-      <div className="mt-6 flex items-center justify-between text-sm text-gray-500">
-        <span>Manufacturer Suggested Retail Price (MSRP)</span>
-        <span>Updated: Jan 2024</span>
+      {/* Brand Selection */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <img src="https://via.placeholder.com/40x40/1e88e5/ffffff?text=P" alt="Pepsico" className="w-10 h-10 rounded" />
+            <div>
+              <div className="text-sm font-medium">Selected / Total</div>
+              <div className="text-xs text-gray-600">13.37 / 60.73</div>
+              <div className="text-xs text-green-600">0.00pp / +60.73pp</div>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <img src="https://via.placeholder.com/40x40/ef4444/ffffff?text=B" alt="Bimbo" className="w-10 h-10 rounded" />
+            <div>
+              <div className="text-sm font-medium">Selected / Total</div>
+              <div className="text-xs text-gray-600">12.98 / 18.64</div>
+              <div className="text-xs text-green-600">0.00pp / +18.64pp</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Column Headers */}
+      <div className="flex items-center mb-4">
+        <div className="w-20 text-center">
+          <div className="text-sm font-medium text-gray-900">SOM($)</div>
+        </div>
+        <div className="flex-1 mx-4 text-center">
+          <div className="text-sm font-medium text-gray-900">← SRP/SOP →</div>
+        </div>
+        <div className="w-20 text-center">
+          <div className="text-sm font-medium text-gray-900">SOM($)</div>
+        </div>
+      </div>
+
+      {/* Draggable Items */}
+      <DndContext 
+        onDragStart={handleDragStart} 
+        onDragEnd={handleDragEnd}
+        collisionDetection={closestCenter}
+      >
+        <SortableContext items={items.map(item => item.id)} strategy={verticalListSortingStrategy}>
+          <div className="space-y-2">
+            {items.map((item, index) => (
+              <SortableItem key={item.id} item={item} index={index} />
+            ))}
+          </div>
+        </SortableContext>
+        
+        <DragOverlay>
+          {activeItem ? (
+            <div className="bg-blue-50 rounded-lg p-3 shadow-lg border-2 border-blue-300">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div 
+                    className="px-3 py-1 rounded text-xs font-medium text-white"
+                    style={{ backgroundColor: activeItem.color }}
+                  >
+                    {activeItem.size}<br/>
+                    {activeItem.grWeight}<br/>
+                    {activeItem.pricePerGr}<br/>
+                    {activeItem.description}
+                  </div>
+                </div>
+                <div className="mx-4">
+                  <div 
+                    className="w-16 h-16 rounded-lg flex items-center justify-center text-white text-lg font-bold"
+                    style={{ backgroundColor: '#1e88e5' }}
+                  >
+                    {activeItem.price}
+                  </div>
+                </div>
+                <div className="text-gray-400">
+                  <GripVertical size={20} />
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+
+      {/* Add Button */}
+      <div className="flex justify-center mt-6">
+        <button className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
+          <Plus size={24} />
+        </button>
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center justify-center space-x-6 mt-6 text-sm">
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-blue-600 rounded"></div>
+          <span>Volume</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-purple-600 rounded"></div>
+          <span>PPV</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-green-600 rounded"></div>
+          <span>% Change in SOM</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-cyan-600 rounded"></div>
+          <span>SOP</span>
+        </div>
       </div>
     </div>
   );
